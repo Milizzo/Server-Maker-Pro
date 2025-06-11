@@ -12,3 +12,4 @@
 /Users/milol/Documents/C#/Server Maker Pro/Server Maker Pro/obj/Debug/net9.0/Server Maker Pro.pdb
 /Users/milol/Documents/C#/Server Maker Pro/Server Maker Pro/obj/Debug/net9.0/Server Maker Pro.genruntimeconfig.cache
 /Users/milol/Documents/C#/Server Maker Pro/Server Maker Pro/obj/Debug/net9.0/ref/Server Maker Pro.dll
+/Users/milol/Documents/C#/Server Maker Pro/Server Maker Pro/obj/Debug/net9.0/Server Maker Pro.sourcelink.json
