@@ -1,0 +1,14 @@
+/Users/milol/Documents/C#/Server Maker Pro/Server Maker Pro/bin/Debug/net9.0/Server Maker Pro
+/Users/milol/Documents/C#/Server Maker Pro/Server Maker Pro/bin/Debug/net9.0/Server Maker Pro.deps.json
+/Users/milol/Documents/C#/Server Maker Pro/Server Maker Pro/bin/Debug/net9.0/Server Maker Pro.runtimeconfig.json
+/Users/milol/Documents/C#/Server Maker Pro/Server Maker Pro/bin/Debug/net9.0/Server Maker Pro.dll
+/Users/milol/Documents/C#/Server Maker Pro/Server Maker Pro/bin/Debug/net9.0/Server Maker Pro.pdb
+/Users/milol/Documents/C#/Server Maker Pro/Server Maker Pro/obj/Debug/net9.0/Server Maker Pro.GeneratedMSBuildEditorConfig.editorconfig
+/Users/milol/Documents/C#/Server Maker Pro/Server Maker Pro/obj/Debug/net9.0/Server Maker Pro.AssemblyInfoInputs.cache
+/Users/milol/Documents/C#/Server Maker Pro/Server Maker Pro/obj/Debug/net9.0/Server Maker Pro.AssemblyInfo.cs
+/Users/milol/Documents/C#/Server Maker Pro/Server Maker Pro/obj/Debug/net9.0/Server Maker Pro.csproj.CoreCompileInputs.cache
+/Users/milol/Documents/C#/Server Maker Pro/Server Maker Pro/obj/Debug/net9.0/Server Maker Pro.dll
+/Users/milol/Documents/C#/Server Maker Pro/Server Maker Pro/obj/Debug/net9.0/refint/Server Maker Pro.dll
+/Users/milol/Documents/C#/Server Maker Pro/Server Maker Pro/obj/Debug/net9.0/Server Maker Pro.pdb
+/Users/milol/Documents/C#/Server Maker Pro/Server Maker Pro/obj/Debug/net9.0/Server Maker Pro.genruntimeconfig.cache
+/Users/milol/Documents/C#/Server Maker Pro/Server Maker Pro/obj/Debug/net9.0/ref/Server Maker Pro.dll
