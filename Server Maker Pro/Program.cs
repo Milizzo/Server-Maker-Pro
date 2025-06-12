@@ -42,6 +42,8 @@ namespace Server_Maker_Pro
 
         static void Main()
         {
+            System.Console.WriteLine("Server Maker Pro v0.1 by @milizzo" + Environment.NewLine);
+
             string settingsDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Server Maker Pro");
             if (!Directory.Exists(settingsDir)) Directory.CreateDirectory(settingsDir);
 
