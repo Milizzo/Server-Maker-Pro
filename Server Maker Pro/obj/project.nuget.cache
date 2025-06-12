@@ -1,10 +1,14 @@
 {
   "version": 2,
-  "dgSpecHash": "+vEeXAhJeX4=",
+  "dgSpecHash": "nZSf55FY3xk=",
   "success": true,
   "projectFilePath": "/Users/milol/Documents/C#/Server Maker Pro/Server Maker Pro/Server Maker Pro.csproj",
   "expectedPackageFiles": [
-    "/Users/milol/.nuget/packages/modrinth.net/3.5.1/modrinth.net.3.5.1.nupkg.sha512"
+    "/Users/milol/.nuget/packages/microsoft.net.illink.tasks/9.0.5/microsoft.net.illink.tasks.9.0.5.nupkg.sha512",
+    "/Users/milol/.nuget/packages/modrinth.net/3.5.1/modrinth.net.3.5.1.nupkg.sha512",
+    "/Users/milol/.nuget/packages/microsoft.netcore.app.runtime.linux-x64/9.0.5/microsoft.netcore.app.runtime.linux-x64.9.0.5.nupkg.sha512",
+    "/Users/milol/.nuget/packages/microsoft.aspnetcore.app.runtime.linux-x64/9.0.5/microsoft.aspnetcore.app.runtime.linux-x64.9.0.5.nupkg.sha512",
+    "/Users/milol/.nuget/packages/microsoft.netcore.app.host.linux-x64/9.0.5/microsoft.netcore.app.host.linux-x64.9.0.5.nupkg.sha512"
   ],
   "logs": []
 }

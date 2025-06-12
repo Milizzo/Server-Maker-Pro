@@ -1,0 +1,3 @@
+/Users/milol/Documents/C#/Server Maker Pro/publish/win/Server Maker Pro.pdb
+/Users/milol/Documents/C#/Server Maker Pro/publish/win/default_properties.txt
+/Users/milol/Documents/C#/Server Maker Pro/publish/win/Server Maker Pro.exe

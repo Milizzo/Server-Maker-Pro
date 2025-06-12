@@ -2,6 +2,33 @@
   "version": 3,
   "targets": {
     "net9.0": {
+      "Microsoft.NET.ILLink.Tasks/9.0.5": {
+        "type": "package",
+        "build": {
+          "build/Microsoft.NET.ILLink.Tasks.props": {}
+        }
+      },
+      "Modrinth.Net/3.5.1": {
+        "type": "package",
+        "compile": {
+          "lib/net8.0/Modrinth.Net.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Modrinth.Net.dll": {
+            "related": ".xml"
+          }
+        }
+      }
+    },
+    "net9.0/linux-x64": {
+      "Microsoft.NET.ILLink.Tasks/9.0.5": {
+        "type": "package",
+        "build": {
+          "build/Microsoft.NET.ILLink.Tasks.props": {}
+        }
+      },
       "Modrinth.Net/3.5.1": {
         "type": "package",
         "compile": {
@@ -18,6 +45,57 @@
     }
   },
   "libraries": {
+    "Microsoft.NET.ILLink.Tasks/9.0.5": {
+      "sha512": "4L7wbb3Y4BJgIeSnmAf/C6S/qCs9rT1b0dX72uj3qo0qvUH7D0U1tU5ZlC7A3Wb8E/dXK4caOi4JkdLTVJaXhw==",
+      "type": "package",
+      "path": "microsoft.net.illink.tasks/9.0.5",
+      "hasTools": true,
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "LICENSE.TXT",
+        "Sdk/Sdk.props",
+        "THIRD-PARTY-NOTICES.TXT",
+        "analyzers/dotnet/cs/ILLink.CodeFixProvider.dll",
+        "analyzers/dotnet/cs/ILLink.RoslynAnalyzer.dll",
+        "build/Microsoft.NET.ILLink.Analyzers.props",
+        "build/Microsoft.NET.ILLink.Tasks.props",
+        "build/Microsoft.NET.ILLink.targets",
+        "microsoft.net.illink.tasks.9.0.5.nupkg.sha512",
+        "microsoft.net.illink.tasks.nuspec",
+        "tools/net472/ILLink.Tasks.dll",
+        "tools/net472/ILLink.Tasks.dll.config",
+        "tools/net472/Mono.Cecil.Mdb.dll",
+        "tools/net472/Mono.Cecil.Pdb.dll",
+        "tools/net472/Mono.Cecil.Rocks.dll",
+        "tools/net472/Mono.Cecil.dll",
+        "tools/net472/Sdk/Sdk.props",
+        "tools/net472/System.Buffers.dll",
+        "tools/net472/System.Collections.Immutable.dll",
+        "tools/net472/System.Memory.dll",
+        "tools/net472/System.Numerics.Vectors.dll",
+        "tools/net472/System.Reflection.Metadata.dll",
+        "tools/net472/System.Runtime.CompilerServices.Unsafe.dll",
+        "tools/net472/build/Microsoft.NET.ILLink.Analyzers.props",
+        "tools/net472/build/Microsoft.NET.ILLink.Tasks.props",
+        "tools/net472/build/Microsoft.NET.ILLink.targets",
+        "tools/net9.0/ILLink.Tasks.deps.json",
+        "tools/net9.0/ILLink.Tasks.dll",
+        "tools/net9.0/Mono.Cecil.Mdb.dll",
+        "tools/net9.0/Mono.Cecil.Pdb.dll",
+        "tools/net9.0/Mono.Cecil.Rocks.dll",
+        "tools/net9.0/Mono.Cecil.dll",
+        "tools/net9.0/Sdk/Sdk.props",
+        "tools/net9.0/build/Microsoft.NET.ILLink.Analyzers.props",
+        "tools/net9.0/build/Microsoft.NET.ILLink.Tasks.props",
+        "tools/net9.0/build/Microsoft.NET.ILLink.targets",
+        "tools/net9.0/illink.deps.json",
+        "tools/net9.0/illink.dll",
+        "tools/net9.0/illink.runtimeconfig.json",
+        "useSharedDesignerContext.txt"
+      ]
+    },
     "Modrinth.Net/3.5.1": {
       "sha512": "55dgOJmwiTUFPWAVyo8+1jpri/y6ILrKL1xC4sZkC9OAfEwZ4CimlYZ1GNIL4qJNWQN252WxFm7MKNCQq4p2sw==",
       "type": "package",
@@ -35,6 +113,7 @@
   },
   "projectFileDependencyGroups": {
     "net9.0": [
+      "Microsoft.NET.ILLink.Tasks >= 9.0.5",
       "Modrinth.Net >= 3.5.1"
     ]
   },
@@ -81,6 +160,12 @@
       "net9.0": {
         "targetAlias": "net9.0",
         "dependencies": {
+          "Microsoft.NET.ILLink.Tasks": {
+            "suppressParent": "All",
+            "target": "Package",
+            "version": "[9.0.5, )",
+            "autoReferenced": true
+          },
           "Modrinth.Net": {
             "target": "Package",
             "version": "[3.5.1, )"
@@ -97,12 +182,31 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
+        "downloadDependencies": [
+          {
+            "name": "Microsoft.AspNetCore.App.Runtime.linux-x64",
+            "version": "[9.0.5, 9.0.5]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Host.linux-x64",
+            "version": "[9.0.5, 9.0.5]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Runtime.linux-x64",
+            "version": "[9.0.5, 9.0.5]"
+          }
+        ],
         "frameworkReferences": {
           "Microsoft.NETCore.App": {
             "privateAssets": "all"
           }
         },
         "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.300/PortableRuntimeIdentifierGraph.json"
+      }
+    },
+    "runtimes": {
+      "linux-x64": {
+        "#import": []
       }
     }
   }

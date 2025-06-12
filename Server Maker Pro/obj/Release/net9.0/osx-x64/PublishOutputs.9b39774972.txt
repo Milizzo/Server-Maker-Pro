@@ -1,0 +1,3 @@
+/Users/milol/Documents/C#/Server Maker Pro/publish/mac/Server Maker Pro.pdb
+/Users/milol/Documents/C#/Server Maker Pro/publish/mac/default_properties.txt
+/Users/milol/Documents/C#/Server Maker Pro/publish/mac/Server Maker Pro
