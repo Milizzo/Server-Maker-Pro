@@ -42,8 +42,28 @@ namespace Server_Maker_Pro
 
         static void Main()
         {
-            // FirstSetup();
-            serversPath = "/Users/milol/Documents/Servers/";
+            string settingsDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Server Maker Pro");
+            if (!Directory.Exists(settingsDir)) Directory.CreateDirectory(settingsDir);
+
+            string settingsFile = Path.Combine(settingsDir, "user.json");
+            if (System.IO.File.Exists(settingsFile))
+            {
+                try
+                {
+                    var jsonSettings = System.IO.File.ReadAllText(settingsFile);
+                    var settings = JsonSerializer.Deserialize<UserSettings>(jsonSettings) ?? throw new Exception("Failed to load user settings.");
+                    serversPath = settings.ServersPath;
+                }
+                catch (Exception ex)
+                {
+                    System.Console.WriteLine($"Failed to load user settings: {ex.Message}. Resetting settings...");
+                    FirstSetup(settingsFile);
+                }
+            }
+            else
+            {
+                FirstSetup(settingsFile);
+            }
 
             if (!Directory.Exists(serversPath))
             {
@@ -238,10 +258,6 @@ namespace Server_Maker_Pro
                 else if (response == "start")
                 {
                     System.Console.WriteLine($"Are you sure you want to start the server \"{Path.GetFileName(server)}\"?");
-                    ConsoleColor color = Console.ForegroundColor;
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    System.Console.WriteLine("IMPORTANT: If all output stops on the server, press the enter key and you should return to the menu if the server has stopped.");
-                    Console.ForegroundColor = color;
 
                     string[] options2 =
                     [
@@ -321,6 +337,7 @@ eula=true
             {
                 System.Console.WriteLine("Starting server...");
             }
+
             System.Console.WriteLine("Note that you might need to install Java if you haven't already (from https://www.oracle.com/java/technologies/downloads/#jdk24-windows).");
 
             string? jarPath = Directory.GetFiles(server, "*.jar").FirstOrDefault();
@@ -331,79 +348,124 @@ eula=true
                 return;
             }
 
-            var startInfo = new ProcessStartInfo
+            string jarCommand = $"java -Xmx4G -Xms4G -jar \"{jarPath}\" nogui";
+
+            Process? processRunning;
+
+            if (OperatingSystem.IsWindows())
             {
-//#if EXC
-//                FileName = "java",
-//                Arguments = $"-Xmx4G -Xms4G -jar \"{jarPath}\" nogui",
-//                RedirectStandardInput = true,
-//                RedirectStandardOutput = true,
-//                RedirectStandardError = true,
-//                UseShellExecute = false,
-//                CreateNoWindow = false,
-//                WorkingDirectory = server,
-// #else
-                FileName = "java",
-                Arguments = $"-Xmx4G -Xms4G -jar \"{jarPath}\" nogui",
-                UseShellExecute = true,
-                WorkingDirectory = server,
-// #endif
-            };
+                string batchFilePath = Path.Combine(server, "start.bat");
 
-            Process serverProcess = new() { StartInfo = startInfo };
+                if (!System.IO.File.Exists(batchFilePath))
+                {
+                    System.Console.WriteLine("Creating server startup file...");
 
-// #if EXC
-// 
-//             serverProcess.OutputDataReceived += (sender, e) =>
-//             {
-//                 System.Console.WriteLine($"Server: {e.Data}");
-//             };
-// 
-//             serverProcess.ErrorDataReceived += (sender, e) =>
-//             {
-//                 ConsoleColor color = Console.ForegroundColor;
-//                 Console.ForegroundColor = ConsoleColor.Yellow;
-//                 System.Console.WriteLine($"Server: {e.Data}");
-//                 Console.ForegroundColor = color;
-//             };
-// 
-//             serverProcess.Start();
-//             serverProcess.BeginOutputReadLine();
-//             serverProcess.BeginErrorReadLine();
-// #else
-            serverProcess.Start();
-// #endif
-// #if EXC
-//             void KillAction(object? sender, object e)
-//             {
-//                 if (serverProcess != null)
-//                 {
-//                     serverProcess.Kill();
-//                     serverProcess.Dispose();
-//                 }
-//             }
-// 
-//             serverProcess.Exited += (sender, e) => System.Console.WriteLine($"Server process stopped with exit code {serverProcess.ExitCode} ({(serverProcess.ExitCode == 0 ? "no errors" : "errors/server crashed")}).");
-// 
-//             AppDomain.CurrentDomain.ProcessExit += KillAction;
-//             Console.CancelKeyPress += KillAction;
-// 
-//             while (!serverProcess.HasExited)
-//             {
-//                 string input = Console.ReadLine() ?? string.Empty;
-// 
-//                 if (serverProcess.HasExited) break;
-// 
-//                 serverProcess.StandardInput.WriteLine(input);
-//             }
-// 
-//             AppDomain.CurrentDomain.ProcessExit -= KillAction;
-//             Console.CancelKeyPress -= KillAction;
-// 
-//             serverProcess.WaitForExit();
-// #else
+                    // 1. Create the .bat file
+                    string batchScript = $"""
+@echo off
+cd /d "{server}"
+java -Xmx4G -Xms4G -jar "{jarPath}" nogui
+pause
+""";
+
+                    System.IO.File.WriteAllText(batchFilePath, batchScript);
+                }
+
+
+                // 2. Start it in a new window using cmd
+                processRunning = Process.Start(new ProcessStartInfo
+                {
+                    FileName = "cmd.exe",
+                    Arguments = $"/C start \"Minecraft Server\" \"{batchFilePath}\"",
+                    UseShellExecute = true // Required to open in new window
+                });
+
+                Console.WriteLine("Server started in a new Command Prompt window. Use \"stop\" in that window to shut it down safely.");
+
+            }
+            else if (OperatingSystem.IsMacOS())
+            {
+                // 1. Create the start.command script
+                string commandScriptPath = Path.Combine(server, "start.command");
+                if (!System.IO.File.Exists(commandScriptPath))
+                {
+                    System.Console.WriteLine("Creating server starup file...");
+
+                    string bashScript = $"""
+#!/bin/bash
+cd "{server}"
+java -Xmx4G -Xms4G -jar "{jarPath}" nogui
+""";
+
+                    System.IO.File.WriteAllText(commandScriptPath, bashScript);
+
+                    // 2. Make it executable
+                    Process chmod = new()
+                    {
+                        StartInfo = new ProcessStartInfo
+                        {
+                            FileName = "chmod",
+                            Arguments = $"+x \"{commandScriptPath}\"",
+                            UseShellExecute = false
+                        }
+                    };
+                    chmod.Start();
+                    chmod.WaitForExit();
+                }
+
+                // 3. Launch it using `open`, which opens Terminal and runs it
+                processRunning = Process.Start(new ProcessStartInfo
+                {
+                    FileName = "open",
+                    Arguments = $"\"{commandScriptPath}\"",
+                    UseShellExecute = false
+                });
+            }
+            else if (OperatingSystem.IsLinux())
+            {
+                string scriptPath = Path.Combine(server, "start.sh");
+
+                if (!System.IO.File.Exists((scriptPath)))
+                {
+                    System.Console.WriteLine("Creating server startup file...");
+
+                    // 1. Create the .sh file
+                    string bashScript = $"""
+#!/bin/bash
+cd "{server}"
+java -Xmx4G -Xms4G -jar "{jarPath}" nogui
+""";
+                    System.IO.File.WriteAllText(scriptPath, bashScript);
+
+                    // 2. Make it executable
+                    Process chmod = new()
+                    {
+                        StartInfo = new ProcessStartInfo
+                        {
+                            FileName = "chmod",
+                            Arguments = $"+x \"{scriptPath}\"",
+                            UseShellExecute = false
+                        }
+                    };
+                    chmod.Start();
+                    chmod.WaitForExit();
+                }
+
+                // 3. Launch in a new terminal window (using gnome-terminal)
+                processRunning = Process.Start(new ProcessStartInfo
+                {
+                    FileName = "gnome-terminal",
+                    Arguments = $"-- bash -c '\"{scriptPath}\"; exec bash'",
+                    UseShellExecute = false
+                });
+            }
+            else
+            {
+                Console.WriteLine("Unsupported OS.");
+                return;
+            }
+
             System.Console.WriteLine("Server console started in new window. Type \"stop\" in the console to save and close it. Just pressing the quit button in the corner will not save your world. Returning to menu...");
-// #endif
         }
 
         static void ImportWorld(string server)
@@ -630,7 +692,7 @@ eula=true
             }
         }
 
-        static void FirstSetup()
+        static void FirstSetup(string settingsFilePath)
         {
             string? path = null;
 
@@ -642,6 +704,14 @@ eula=true
 
             if (!Directory.Exists(path)) Directory.CreateDirectory(path);
             serversPath = path;
+
+            var settings = new UserSettings
+            {
+                ServersPath = serversPath,
+            };
+            var jsonSettings = JsonSerializer.Serialize(settings);
+
+            System.IO.File.WriteAllText(settingsFilePath, jsonSettings);
         }
 
         static string AskForOptions(string[] options, string question = "Type an option name: ")
