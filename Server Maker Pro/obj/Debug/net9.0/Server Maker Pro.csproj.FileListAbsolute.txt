@@ -14,3 +14,6 @@
 /Users/milol/Documents/C#/Server Maker Pro/Server Maker Pro/obj/Debug/net9.0/ref/Server Maker Pro.dll
 /Users/milol/Documents/C#/Server Maker Pro/Server Maker Pro/obj/Debug/net9.0/Server Maker Pro.sourcelink.json
 /Users/milol/Documents/C#/Server Maker Pro/Server Maker Pro/bin/Debug/net9.0/default_properties.txt
+/Users/milol/Documents/C#/Server Maker Pro/Server Maker Pro/bin/Debug/net9.0/Modrinth.Net.dll
+/Users/milol/Documents/C#/Server Maker Pro/Server Maker Pro/obj/Debug/net9.0/Server Maker Pro.csproj.AssemblyReference.cache
+/Users/milol/Documents/C#/Server Maker Pro/Server Maker Pro/obj/Debug/net9.0/Server M.0CA872C4.Up2Date

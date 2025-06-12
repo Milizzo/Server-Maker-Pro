@@ -1,11 +1,42 @@
 {
   "version": 3,
   "targets": {
-    "net9.0": {}
+    "net9.0": {
+      "Modrinth.Net/3.5.1": {
+        "type": "package",
+        "compile": {
+          "lib/net8.0/Modrinth.Net.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Modrinth.Net.dll": {
+            "related": ".xml"
+          }
+        }
+      }
+    }
   },
-  "libraries": {},
+  "libraries": {
+    "Modrinth.Net/3.5.1": {
+      "sha512": "55dgOJmwiTUFPWAVyo8+1jpri/y6ILrKL1xC4sZkC9OAfEwZ4CimlYZ1GNIL4qJNWQN252WxFm7MKNCQq4p2sw==",
+      "type": "package",
+      "path": "modrinth.net/3.5.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "lib/net8.0/Modrinth.Net.dll",
+        "lib/net8.0/Modrinth.Net.xml",
+        "modrinth.net.3.5.1.nupkg.sha512",
+        "modrinth.net.nuspec"
+      ]
+    }
+  },
   "projectFileDependencyGroups": {
-    "net9.0": []
+    "net9.0": [
+      "Modrinth.Net >= 3.5.1"
+    ]
   },
   "packageFolders": {
     "/Users/milol/.nuget/packages/": {}
@@ -49,6 +80,12 @@
     "frameworks": {
       "net9.0": {
         "targetAlias": "net9.0",
+        "dependencies": {
+          "Modrinth.Net": {
+            "target": "Package",
+            "version": "[3.5.1, )"
+          }
+        },
         "imports": [
           "net461",
           "net462",

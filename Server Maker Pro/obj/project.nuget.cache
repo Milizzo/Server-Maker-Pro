@@ -1,8 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "Ta0A0rtDSWM=",
+  "dgSpecHash": "+vEeXAhJeX4=",
   "success": true,
   "projectFilePath": "/Users/milol/Documents/C#/Server Maker Pro/Server Maker Pro/Server Maker Pro.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "/Users/milol/.nuget/packages/modrinth.net/3.5.1/modrinth.net.3.5.1.nupkg.sha512"
+  ],
   "logs": []
 }
