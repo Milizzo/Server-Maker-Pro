@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using Modrinth;
+using Modrinth.Models;
 
 namespace Server_Maker_Pro
 {
@@ -12,6 +13,31 @@ namespace Server_Maker_Pro
         static string serversPath = string.Empty;
 
         const string infoFileName = "info.json";
+
+        public static string GetMinecraftPath()
+        {
+            string homeDir;
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                homeDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData); // Roaming
+                return Path.Combine(homeDir, ".minecraft");
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                homeDir = Environment.GetEnvironmentVariable("HOME") ?? "";
+                return Path.Combine(homeDir, "Library", "Application Support", "minecraft");
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                homeDir = Environment.GetEnvironmentVariable("HOME") ?? "";
+                return Path.Combine(homeDir, ".minecraft");
+            }
+            else
+            {
+                throw new Exception("Unsupported OS.");
+            }
+        }
 
         static void Main()
         {
@@ -26,27 +52,34 @@ namespace Server_Maker_Pro
 
             string[] thingsToDo =
             [
-                "play",
+                "servers",
                 "create",
                 "exit",
             ];
 
             while (true)
             {
-                string response = AskForOptions(thingsToDo);
+                try
+                {
+                    string response = AskForOptions(thingsToDo);
 
-                if (response == "play")
-                {
-                    ServerSelection();
+                    if (response == "servers")
+                    {
+                        ServerSelection();
+                    }
+                    if (response == "create")
+                    {
+                        CreateServer();
+                    }
+                    else if (response == "exit")
+                    {
+                        Console.WriteLine("Goodbye!");
+                        break;
+                    }
                 }
-                if (response == "create")
+                catch (Exception ex)
                 {
-                    CreateServer();
-                }
-                else if (response == "exit")
-                {
-                    Console.WriteLine("Goodbye!");
-                    break;
+                    System.Console.WriteLine($"The software has returned to the main menu due to an uncaught error:{Environment.NewLine}{ex.Message}");
                 }
             }
         }
@@ -106,23 +139,27 @@ namespace Server_Maker_Pro
 
             string mcVer = AskForOptions([.. versionListCook]);
 
-            System.Console.WriteLine("Downloading server software...");
+            System.Console.WriteLine("Starting server software download...");
 
             string url = mcVerLCook[Array.IndexOf([.. versionListCook], mcVer)];
-            string softwarePath = Path.Combine(fullPath, Path.GetFileName(url));
-            byte[] bytes = client.GetByteArrayAsync(url).Result;
-            File.WriteAllBytes(softwarePath, bytes);
+            Task<byte[]> downloadedSoftware = client.GetByteArrayAsync(url);
 
             System.Console.WriteLine("Adding server properties file...");
 
             string propertiesFilePath = Path.Combine(fullPath, "server.properties");
-            File.WriteAllText(propertiesFilePath, File.ReadAllText("default_properties.txt"));
+            System.IO.File.WriteAllText(propertiesFilePath, System.IO.File.ReadAllText("default_properties.txt"));
 
             System.Console.WriteLine("Generating and adding server info file...");
 
             string infoFilePath = Path.Combine(fullPath, infoFileName);
             string jsonInfo = JsonSerializer.Serialize(new ServerInfo(mcVer, "paper"));
-            File.WriteAllText(infoFilePath, jsonInfo);
+            System.IO.File.WriteAllText(infoFilePath, jsonInfo);
+
+            System.Console.WriteLine("Finishing server software download...");
+
+            byte[] softwareResult = downloadedSoftware.Result;
+            string softwarePath = Path.Combine(fullPath, Path.GetFileName(url));
+            System.IO.File.WriteAllBytes(softwarePath, softwareResult);
 
             System.Console.WriteLine($"Successfully created server: {name}.");
 
@@ -183,11 +220,14 @@ namespace Server_Maker_Pro
                 "start",
                 "config",
                 "plugins",
+                "import world",
                 "folder",
             ];
 
             while (true)
             {
+                System.Console.WriteLine($"Current server: {Path.GetFileName(server)}");
+
                 string response = AskForOptions(options);
 
                 if (response == "back")
@@ -196,13 +236,30 @@ namespace Server_Maker_Pro
                 }
                 else if (response == "start")
                 {
-                    Console.WriteLine("Nice try.");
+                    System.Console.WriteLine($"Are you sure you want to start the server \"{Path.GetFileName(server)}\"?");
+
+                    string[] options2 =
+                    [
+                        "cancel",
+                        "start",
+                    ];
+
+                    string response2 = AskForOptions(options2);
+
+                    if (response2 == "cancel")
+                    {
+                        continue;
+                    }
+                    else if (response2 == "start")
+                    {
+                        StartServer(server);
+                    }
                 }
                 else if (response == "config")
                 {
                     string propertiesPath = Path.Combine(server, "server.properties");
 
-                    if (!File.Exists(propertiesPath))
+                    if (!System.IO.File.Exists(propertiesPath))
                     {
                         Console.WriteLine("Server properties file not found. You may need to start the server first.");
                         continue;
@@ -214,6 +271,10 @@ namespace Server_Maker_Pro
                 {
                     ServerPlugins(server);
                 }
+                else if (response == "import world")
+                {
+                    ImportWorld(server);
+                }
                 else if (response == "folder")
                 {
                     OpenFolder(server);
@@ -221,8 +282,129 @@ namespace Server_Maker_Pro
             }
         }
 
+        static void StartServer(string server)
+        {
+            string? jarPath = Directory.GetFiles(server, "*.jar").FirstOrDefault();
+
+            if (jarPath == null)
+            {
+                System.Console.WriteLine("No server .jar file could be found for this server. Try installing a new one from papermc.io or creating a new server.");
+                return;
+            }
+
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = "java",
+                Arguments = $"-Xmx4G -Xms4G -jar \"{jarPath}\" nogui",
+                RedirectStandardInput = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = false,
+                WorkingDirectory = server,
+            };
+
+            Process serverProcess = new() { StartInfo = startInfo };
+
+            serverProcess.OutputDataReceived += (sender, e) =>
+            {
+                System.Console.WriteLine($"Server: {e}");
+            };
+
+            serverProcess.ErrorDataReceived += (sender, e) =>
+            {
+                System.Console.WriteLine($"Server Error: {e}");
+            };
+
+            serverProcess.Start();
+            serverProcess.BeginOutputReadLine();
+            serverProcess.BeginErrorReadLine();
+
+            void KillAction(object? sender, object e)
+            {
+                if (serverProcess != null)
+                {
+                    serverProcess.Kill();
+                    serverProcess.Dispose();
+                }
+            }
+
+            AppDomain.CurrentDomain.ProcessExit += KillAction;
+            Console.CancelKeyPress += KillAction;
+
+            while (!serverProcess.HasExited)
+            {
+                string input = Console.ReadLine() ?? string.Empty;
+                serverProcess.StandardInput.WriteLine(input);
+            }
+
+            AppDomain.CurrentDomain.ProcessExit -= KillAction;
+            Console.CancelKeyPress -= KillAction;
+
+            serverProcess.WaitForExit();
+            int exitCode = serverProcess.ExitCode;
+
+            System.Console.WriteLine($"Server process stopped with exit code {exitCode} ({(exitCode == 0 ? "no errors" : "server crashed")}).");
+        }
+
+        static void ImportWorld(string server)
+        {
+            string worldPath = Path.Combine(server, "world");
+
+            if (Directory.Exists(worldPath) && Directory.GetFiles(worldPath).Length > 0)
+            {
+                System.Console.WriteLine("Your server already has a world. Please create a new server or manually delete your current server's world folder(s).");
+                return;
+            }
+
+            string[] options1 =
+            [
+                "back",
+                "from minecraft",
+                "from folder path",
+            ];
+
+            string response1 = AskForOptions(options1, "How to import: ");
+
+            if (response1 == "back")
+            {
+                return;
+            }
+            else if (response1 == "from minecraft")
+            {
+                string minecraftPath = GetMinecraftPath();
+                string savesPath = Path.Combine(minecraftPath, "saves");
+                string[] saves = Directory.GetDirectories(savesPath);
+
+                string[] options2 = [.. saves.Select(s => Path.GetFileName(s))];
+
+                string response2 = AskForOptions(options2);
+
+                string selectedSavePath = saves[Array.IndexOf(options2, response2)];
+
+                CopyDirectory(selectedSavePath, worldPath);
+            }
+            else if (response1 == "from folder path")
+            {
+                System.Console.Write("Enter path to world folder: ");
+                string path = Console.ReadLine() ?? string.Empty;
+
+                if (!Directory.Exists(path))
+                {
+                    System.Console.WriteLine($"No directory could be found at path: {path}.");
+                    return;
+                }
+
+                CopyDirectory(path, worldPath);
+            }
+        }
+
         static void ServerPlugins(string server)
         {
+            string pluginsDir = Path.Combine(server, "plugins");
+
+            if (!Directory.Exists(pluginsDir)) Directory.CreateDirectory(pluginsDir);
+
             while (true)
             {
                 string[] options =
@@ -230,6 +412,7 @@ namespace Server_Maker_Pro
                     "back",
                     "install",
                     "list",
+                    "folder",
                 ];
 
                 string response = AskForOptions(options);
@@ -244,12 +427,21 @@ namespace Server_Maker_Pro
                 }
                 else if (response == "list")
                 {
-                    string[] plugins = Directory.GetFiles(server, "*.jar");
+                    string[] plugins = Directory.GetFiles(pluginsDir, "*.jar");
+
+                    if (plugins.Length == 0)
+                    {
+                        System.Console.WriteLine("No plugins installed!");
+                    }
 
                     foreach (string plugin in plugins)
                     {
                         System.Console.WriteLine(Path.GetFileNameWithoutExtension(plugin));
                     }
+                }
+                else if (response == "folder")
+                {
+                    OpenFolder(pluginsDir);
                 }
             }
         }
@@ -259,7 +451,7 @@ namespace Server_Maker_Pro
             try
             {
                 string infoPath = Path.Combine(server, infoFileName);
-                string jsonInfo = File.ReadAllText(infoPath);
+                string jsonInfo = System.IO.File.ReadAllText(infoPath);
                 ServerInfo info = JsonSerializer.Deserialize<ServerInfo>(jsonInfo) ?? throw new Exception("Server info file could not be deserialized.");
 
                 string version = info.Version;
@@ -274,26 +466,108 @@ namespace Server_Maker_Pro
                     { Facet.Category(loader) },
                 };
 
-                string query = string.Empty;
+                string? query = null;
+
+                SearchResult[] searched;
 
                 while (true)
                 {
-                    var searchResult = modrinth.Project.SearchAsync(query, facets: facets, limit: 10).Result;
+                    if (query != null) System.Console.WriteLine($"Results for \"{query}\":{Environment.NewLine}");
+
+                    var searchResult = modrinth.Project.SearchAsync(query ?? string.Empty, facets: facets, limit: 30).Result;
 
                     foreach (var proj in searchResult.Hits)
                     {
                         System.Console.WriteLine(proj.Title);
                     }
 
-                    System.Console.Write("Type to search (\"exit\" to break): ");
+                    System.Console.Write("Type to search (\"exit\" to break, \"next\" to be able to choose a plugin from the current list): ");
                     query = Console.ReadLine() ?? string.Empty;
 
-                    if (query == "exit") break;
+                    if (query == "exit") return;
+
+                    if (query == "next")
+                    {
+                        searched = searchResult.Hits;
+                        break;
+                    }
                 }
+
+                List<string> options = [.. searched.Select(s => s.Title ?? "Failed to load title")];
+                options.Add("cancel");
+
+                string response = AskForOptions([.. options], "Choose a plugin to download (by name): ");
+
+                if (response.Equals("cancel", StringComparison.InvariantCultureIgnoreCase)) return;
+
+                HashSet<string> downloaded = [];
+                var plugin = searched[options.IndexOf(response)];
+
+                string pluginsDir = Path.Combine(server, "plugins");
+                DownloadPluginAndDependenciesRecursive(plugin.Slug ?? throw new Exception("Failed to load project slug."), version, loader, downloaded, pluginsDir);
+
+                System.Console.WriteLine(Environment.NewLine + $"{downloaded.Count} plugins have been installed to server \"{Path.GetFileName(server)}\".");
             }
             catch (Exception ex)
             {
-                System.Console.WriteLine($"An error occured: {ex.Message}{Environment.NewLine}Returning to server menu...");
+                System.Console.WriteLine($"An error occured: {ex.Message}{Environment.NewLine}Returning...");
+            }
+        }
+
+        static void DownloadPluginAndDependenciesRecursive(string slug, string minecraftVersion, string loader, HashSet<string> downloadedSlugs, string pluginsPath)
+        {
+            if (downloadedSlugs.Contains(slug)) return;
+
+            System.Console.WriteLine($"Downloading plugin \"{slug}\"...");
+
+            var client = new ModrinthClient();
+            var project = client.Project.GetAsync(slug).GetAwaiter().GetResult();
+            var versions = client.Version.GetProjectVersionListAsync(slug).GetAwaiter().GetResult();
+
+            var matchingVersion = versions.FirstOrDefault(v =>
+                v.GameVersions.Contains(minecraftVersion, StringComparer.OrdinalIgnoreCase) &&
+                v.Loaders.Contains(loader, StringComparer.OrdinalIgnoreCase));
+
+            if (!downloadedSlugs.Contains(project.Slug)) downloadedSlugs.Add(project.Slug);
+
+            if (matchingVersion == null)
+            {
+                System.Console.WriteLine($"No matching versions could be found for plugin \"{project.Slug}\". Skipping download.");
+
+                return;
+            }
+
+            var file = matchingVersion.Files.FirstOrDefault(f => f.Url.EndsWith(".jar"));
+
+            if (file != null)
+            {
+                string fileName = file.FileName ?? Path.GetFileName(file.Url);
+
+                if (!Directory.Exists(pluginsPath)) Directory.CreateDirectory(pluginsPath);
+
+                string destination = Path.Combine(pluginsPath, fileName);
+
+                if (!System.IO.File.Exists(destination))
+                {
+                    using var httpClient = new HttpClient();
+                    byte[] pluginBytes = httpClient.GetByteArrayAsync(file.Url).GetAwaiter().GetResult();
+                    System.IO.File.WriteAllBytes(destination, pluginBytes);
+
+                    System.Console.WriteLine($"Successfully installed plugin \"{slug}\".");
+                }
+                else
+                {
+                    System.Console.WriteLine($"Skipped downloading plugin \"{slug}\" because it is already downloaded.");
+                }
+            }
+
+            if (matchingVersion.Dependencies != null)
+            {
+                foreach (var dep in matchingVersion.Dependencies.Where(d => d.ProjectId is not null))
+                {
+                    var depProject = client.Project.GetAsync(dep.ProjectId!).GetAwaiter().GetResult();
+                    DownloadPluginAndDependenciesRecursive(depProject.Slug!, minecraftVersion, loader, downloadedSlugs, pluginsPath);
+                }
             }
         }
 
@@ -372,6 +646,33 @@ namespace Server_Maker_Pro
             else
             {
                 Console.WriteLine("Unsupported OS.");
+            }
+        }
+
+        public static void CopyDirectory(string p1, string p2)
+        {
+            if (!Directory.Exists(p1)) throw new Exception("Directory not found: " + p1 + ".");
+            if (!Directory.Exists(p2)) Directory.CreateDirectory(p2);
+
+            if (Directory.GetFiles(p2).Length > 0) throw new Exception("There are already files present in directory: " + p1 + ".");
+
+            string[] files = Directory.GetFiles(p1);
+            string[] directories = Directory.GetDirectories(p1);
+
+            foreach (string file in files)
+            {
+                string originalPath = file;
+                string newPath = Path.Combine(p2, Path.GetFileName(file));
+
+                System.IO.File.Copy(originalPath, newPath);
+            }
+
+            foreach (string directory in directories)
+            {
+                string originalPath = directory;
+                string newPath = Path.Combine(p2, Path.GetFileName(directory));
+
+                CopyDirectory(originalPath, newPath);
             }
         }
     }
