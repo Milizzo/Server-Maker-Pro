@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text.Json;
 using Modrinth;
 using Modrinth.Models;
+using System.Drawing;
 
 namespace Server_Maker_Pro
 {
@@ -237,6 +238,10 @@ namespace Server_Maker_Pro
                 else if (response == "start")
                 {
                     System.Console.WriteLine($"Are you sure you want to start the server \"{Path.GetFileName(server)}\"?");
+                    ConsoleColor color = Console.ForegroundColor;
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    System.Console.WriteLine("IMPORTANT: If all output stops on the server, press the enter key and you should return to the menu if the server has stopped.");
+                    Console.ForegroundColor = color;
 
                     string[] options2 =
                     [
@@ -284,6 +289,40 @@ namespace Server_Maker_Pro
 
         static void StartServer(string server)
         {
+            string eulaPath = Path.Join(server, "eula.txt");
+
+            if (!System.IO.File.Exists(eulaPath))
+            {
+                System.Console.WriteLine("Before starting a server for the first time, you must agree to Minecraft's EULA (https://aka.ms/MinecraftEULA).");
+                System.Console.WriteLine("Do you agree to the Minecraft EULA?");
+
+                string[] options =
+                [
+                    "cancel",
+                    "agree",
+                ];
+
+                string response = AskForOptions(options);
+
+                if (response == "cancel")
+                {
+                    return;
+                }
+                else if (response == "agree")
+                {
+                    System.IO.File.WriteAllText(eulaPath, $@"#By changing the setting below to TRUE you are indicating your agreement to our EULA (https://aka.ms/MinecraftEULA).
+#{DateTime.Now:ddd MMM dd HH:mm:ss zzz yyyy}
+eula=true
+");
+                    System.Console.WriteLine("You have agreed to Minecraft's EULA. Starting server...");
+                }
+            }
+            else
+            {
+                System.Console.WriteLine("Starting server...");
+            }
+            System.Console.WriteLine("Note that you might need to install Java if you haven't already (from https://www.oracle.com/java/technologies/downloads/#jdk24-windows).");
+
             string? jarPath = Directory.GetFiles(server, "*.jar").FirstOrDefault();
 
             if (jarPath == null)
@@ -294,57 +333,77 @@ namespace Server_Maker_Pro
 
             var startInfo = new ProcessStartInfo
             {
+//#if EXC
+//                FileName = "java",
+//                Arguments = $"-Xmx4G -Xms4G -jar \"{jarPath}\" nogui",
+//                RedirectStandardInput = true,
+//                RedirectStandardOutput = true,
+//                RedirectStandardError = true,
+//                UseShellExecute = false,
+//                CreateNoWindow = false,
+//                WorkingDirectory = server,
+// #else
                 FileName = "java",
                 Arguments = $"-Xmx4G -Xms4G -jar \"{jarPath}\" nogui",
-                RedirectStandardInput = true,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = false,
+                UseShellExecute = true,
                 WorkingDirectory = server,
+// #endif
             };
 
             Process serverProcess = new() { StartInfo = startInfo };
 
-            serverProcess.OutputDataReceived += (sender, e) =>
-            {
-                System.Console.WriteLine($"Server: {e}");
-            };
-
-            serverProcess.ErrorDataReceived += (sender, e) =>
-            {
-                System.Console.WriteLine($"Server Error: {e}");
-            };
-
+// #if EXC
+// 
+//             serverProcess.OutputDataReceived += (sender, e) =>
+//             {
+//                 System.Console.WriteLine($"Server: {e.Data}");
+//             };
+// 
+//             serverProcess.ErrorDataReceived += (sender, e) =>
+//             {
+//                 ConsoleColor color = Console.ForegroundColor;
+//                 Console.ForegroundColor = ConsoleColor.Yellow;
+//                 System.Console.WriteLine($"Server: {e.Data}");
+//                 Console.ForegroundColor = color;
+//             };
+// 
+//             serverProcess.Start();
+//             serverProcess.BeginOutputReadLine();
+//             serverProcess.BeginErrorReadLine();
+// #else
             serverProcess.Start();
-            serverProcess.BeginOutputReadLine();
-            serverProcess.BeginErrorReadLine();
-
-            void KillAction(object? sender, object e)
-            {
-                if (serverProcess != null)
-                {
-                    serverProcess.Kill();
-                    serverProcess.Dispose();
-                }
-            }
-
-            AppDomain.CurrentDomain.ProcessExit += KillAction;
-            Console.CancelKeyPress += KillAction;
-
-            while (!serverProcess.HasExited)
-            {
-                string input = Console.ReadLine() ?? string.Empty;
-                serverProcess.StandardInput.WriteLine(input);
-            }
-
-            AppDomain.CurrentDomain.ProcessExit -= KillAction;
-            Console.CancelKeyPress -= KillAction;
-
-            serverProcess.WaitForExit();
-            int exitCode = serverProcess.ExitCode;
-
-            System.Console.WriteLine($"Server process stopped with exit code {exitCode} ({(exitCode == 0 ? "no errors" : "server crashed")}).");
+// #endif
+// #if EXC
+//             void KillAction(object? sender, object e)
+//             {
+//                 if (serverProcess != null)
+//                 {
+//                     serverProcess.Kill();
+//                     serverProcess.Dispose();
+//                 }
+//             }
+// 
+//             serverProcess.Exited += (sender, e) => System.Console.WriteLine($"Server process stopped with exit code {serverProcess.ExitCode} ({(serverProcess.ExitCode == 0 ? "no errors" : "errors/server crashed")}).");
+// 
+//             AppDomain.CurrentDomain.ProcessExit += KillAction;
+//             Console.CancelKeyPress += KillAction;
+// 
+//             while (!serverProcess.HasExited)
+//             {
+//                 string input = Console.ReadLine() ?? string.Empty;
+// 
+//                 if (serverProcess.HasExited) break;
+// 
+//                 serverProcess.StandardInput.WriteLine(input);
+//             }
+// 
+//             AppDomain.CurrentDomain.ProcessExit -= KillAction;
+//             Console.CancelKeyPress -= KillAction;
+// 
+//             serverProcess.WaitForExit();
+// #else
+            System.Console.WriteLine("Server console started in new window. Type \"stop\" in the console to save and close it. Just pressing the quit button in the corner will not save your world. Returning to menu...");
+// #endif
         }
 
         static void ImportWorld(string server)
