@@ -1,5 +1,5 @@
 # What Is Server Maker Pro?
-The most hardcoded free open-source cross platform Minecraft mod manager of all time.
+The most hardcoded free open-source cross platform Minecraft server manager of all time.
 
 Not yet tested on Linux or Windows yet.
 
