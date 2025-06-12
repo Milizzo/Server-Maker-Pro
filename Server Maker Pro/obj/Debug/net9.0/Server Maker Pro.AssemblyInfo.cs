@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Server Maker Pro")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+44a407c6f2ad6ce777b73f5928b5989ffd21b2df")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d86b1affea6b620a97f27086715cbda021599b89")]
 [assembly: System.Reflection.AssemblyProductAttribute("Server Maker Pro")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Server Maker Pro")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
