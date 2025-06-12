@@ -1,2 +1,5 @@
-*/bin/
-*/publish/
+# Ignore the publish folder at the root
+/publish/
+
+# Ignore bin folder inside Project
+/Project/bin/
