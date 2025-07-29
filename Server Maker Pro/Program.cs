@@ -140,7 +140,7 @@ namespace Server_Maker_Pro
         /// </summary>
         /// <remarks>
         /// The method involves network operations to retrieve supported Minecraft server versions and to download the server software.
-        /// It also performs file system operations to configure the server directory and write necessary files.
+        /// It also performs file system operations to configure the server directory and write the necessary files.
         /// </remarks>
         /// <exception cref="InvalidOperationException">
         /// Thrown if there are issues in retrieving server versions or downloading the server software.
@@ -233,7 +233,7 @@ namespace Server_Maker_Pro
 
         /// <summary>
         /// Retrieves the index of the first occurrence of a specified element in an array.
-        /// If the element is not found, returns null.
+        /// If the element is not found, it returns null.
         /// </summary>
         /// <typeparam name="T">
         /// The type of elements in the array. The type must implement the IEquatable interface to allow equality comparison.
@@ -283,7 +283,7 @@ namespace Server_Maker_Pro
         /// the server menu for further actions.
         /// </summary>
         /// <remarks>
-        /// The method assumes that the servers directory path is properly set and accessible.
+        /// The method assumes that the server directory path is properly set and accessible.
         /// If there are no servers available, a message is displayed, and the method exits.
         /// Null and invalid selections are appropriately handled.
         /// </remarks>
@@ -844,7 +844,7 @@ eula=true
         }
 
         /// <summary>
-        /// Performs the initial setup process, prompting the user for the path where server folders should be stored.
+        /// Performs the initial setup process, prompting the user to the path where server folders should be stored.
         /// Ensures that the provided directory exists and creates it if it does not.
         /// Saves the provided path into a settings file in JSON format for future use.
         /// </summary>
